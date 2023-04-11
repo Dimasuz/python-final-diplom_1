@@ -1,7 +1,8 @@
 # Верстальщик
 from rest_framework import serializers
 
-from backend.models import User, Category, Shop, ProductInfo, Product, ProductParameter, OrderItem, Order, Contact
+from backend.models import User, Category, Shop, ProductInfo, Product, ProductParameter, \
+    OrderItem, Order, Contact, Parameter
 
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -14,12 +15,20 @@ class ContactSerializer(serializers.ModelSerializer):
         }
 
 
+class ShopSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shop
+        fields = ('id', 'name', 'state', 'user', 'url')
+        read_only_fields = ('id',)
+
+
 class UserSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(read_only=True, many=True)
+    shop = ShopSerializer(read_only=True, many=True)
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'contacts')
+        fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'contacts', 'type', 'shop',)
         read_only_fields = ('id',)
 
 
@@ -27,13 +36,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name',)
-        read_only_fields = ('id',)
-
-
-class ShopSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Shop
-        fields = ('id', 'name', 'state',)
         read_only_fields = ('id',)
 
 
@@ -66,7 +68,7 @@ class ProductInfoSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ('id', 'product_info', 'quantity', 'order',)
+        fields = ('id', 'product_info', 'quantity', 'order', 'state',)
         read_only_fields = ('id',)
         extra_kwargs = {
             'order': {'write_only': True}
@@ -85,5 +87,14 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'ordered_items', 'state', 'dt', 'total_sum', 'contact',)
+        fields = ('id', 'ordered_items', 'dt', 'total_sum', 'contact', 'state')
         read_only_fields = ('id',)
+
+#< добавлен сериалайзер для параметров
+class ParameterSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Parameter
+        fields = ('id', 'name')
+        read_only_fields = ('id',)
+#>

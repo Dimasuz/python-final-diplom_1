@@ -8,6 +8,15 @@ from django_rest_passwordreset.tokens import get_token_generator
 STATE_CHOICES = (
     ('basket', 'Статус корзины'),
     ('new', 'Новый'),
+    # ('confirmed', 'Подтвержден'),
+    # ('assembled', 'Собран'),
+    # ('sent', 'Отправлен'),
+    # ('delivered', 'Доставлен'),
+    # ('canceled', 'Отменен'),
+)
+
+STATE_CHOICES_ITEM = (
+    ('new', 'Новый'),
     ('confirmed', 'Подтвержден'),
     ('assembled', 'Собран'),
     ('sent', 'Отправлен'),
@@ -82,7 +91,7 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         _('active'),
-        default=False,
+        default=True,
         help_text=_(
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'
@@ -102,10 +111,14 @@ class User(AbstractUser):
 class Shop(models.Model):
     name = models.CharField(max_length=50, verbose_name='Название')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
-    user = models.OneToOneField(User, verbose_name='Пользователь',
+    # user = models.OneToOneField(User, verbose_name='Пользователь',
+    user = models.ForeignKey(User, verbose_name='Пользователь', related_name='shop',
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
     state = models.BooleanField(verbose_name='статус получения заказов', default=True)
+    #<
+    delivery = models.PositiveIntegerField(verbose_name='Цена доставки поставщиком', default=0)
+    #>
 
     # filename
 
@@ -244,6 +257,8 @@ class OrderItem(models.Model):
                                      blank=True,
                                      on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name='Количество')
+    state = models.CharField(verbose_name='Статус позиции в заказе', choices=STATE_CHOICES_ITEM, max_length=15,
+                             blank=True, null=True,)
 
     class Meta:
         verbose_name = 'Заказанная позиция'

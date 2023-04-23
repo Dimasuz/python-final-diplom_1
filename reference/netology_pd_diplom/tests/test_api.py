@@ -1,4 +1,5 @@
 import time
+import pprint
 import pytest
 from model_bakery import baker
 import warnings
@@ -12,14 +13,14 @@ pytestmark = pytest.mark.django_db
 URL_BASE = 'http://127.0.0.1:8000/api/v1/'
 
 
-def base_request(client, url_view='', method='get', token=None, data=None, params=None,):
+def base_request(client, url_view='', method='get', token=None, data=None,):
     url = URL_BASE + url_view
     if token:
         headers = {'Authorization': f"Token {token}", }
     else:
         headers = None
     if method == 'get':
-        response = client.get(url, headers=headers, params=params)
+        response = client.get(url, headers=headers, data=data,)
     if method == 'post':
         response = client.post(url, headers=headers, data=data,)
     if method == 'put':
@@ -51,7 +52,7 @@ def test_login(client, user_create):
     email = user['email']
     password = user['password']
     # user login
-    url_view = 'user/login'
+    url_view = 'user/login/'
     url = URL_BASE + url_view
     data = {'email': email,
             'password': password,
@@ -72,7 +73,7 @@ def test_login(client, user_create):
 
 # 'parameter'
 def test_parameter(client, user_create_login):
-    url_view = 'parameter'
+    url_view = 'parameter/'
     token = user_create_login['token']
     # post
     name = f'name_{time.time()}'
@@ -109,7 +110,7 @@ def test_parameter(client, user_create_login):
 
 # 'categories'
 def test_categories(client):
-    url_view = 'categories'
+    url_view = 'categories/'
     categories = baker.make(Category, make_m2m=True, _quantity=5)
     response_status, response_json = base_request(client=client, url_view=url_view)
     assert response_status == 200
@@ -118,7 +119,7 @@ def test_categories(client):
 
 #'shops'
 def test_shops(client):
-    url_view = 'shops'
+    url_view = 'shops/'
     shops = baker.make(Shop, make_m2m=True, _quantity=5)
     response_status, response_json = base_request(client=client, url_view=url_view)
     assert response_status == 200
@@ -127,7 +128,7 @@ def test_shops(client):
 
 # 'user/details'
 def test_user_details(client, user_create_login):
-    url_view = 'user/details'
+    url_view = 'user/details/'
     token = user_create_login['token']
     # get
     status, response_json = base_request(client, url_view=url_view, method='get', token=token)
@@ -146,19 +147,23 @@ def test_user_details(client, user_create_login):
 #'products'
 def test_products(client, fill_base):
     products = fill_base
-    url_view = 'products'
+    url_view = 'products/'
+    url = URL_BASE + url_view
     # get все товары
     response_status, response_json = base_request(client=client, url_view=url_view)
     assert response_status == 200
-    assert len(response_json) == 2
+    assert len(response_json['results']) == 2
     # get один товар
-    params = {'product_id': 1,}
-    response_status, response_json = base_request(client=client, url_view=url_view, params=params)
+    data = {"product_id": 1}
+    response_status, response_json = base_request(client=client, url_view=url_view, data=data)
+    print(response_json)
     assert response_status == 200
+    assert len(response_json['results']) == 1
+    assert response_json['results'][0]['id'] == 1
 
 
 def test_user_contact(client, user_create_login):
-    url_view = 'user/contact'
+    url_view = 'user/contact/'
     user = user_create_login
     token = user_create_login['token']
     num = 1
@@ -202,7 +207,7 @@ def test_basket(client, fill_base):
     user_auth = User.objects.get(email=users[0]['email'])
     client.force_authenticate(user=user_auth)
     token = users[0]['token']
-    url_view = 'basket'
+    url_view = 'basket/'
     # post
     data = {'items': '[{"quantity": 1, "product_info": 1}, {"quantity": 1, "product_info": 2}]'}
     status, response_json = base_request(client, url_view=url_view, method='post', token=token, data=data)
@@ -232,10 +237,10 @@ def test_basket(client, fill_base):
 def test_order(client, fill_base):
     # создание корзины
     users = fill_base
-    url_view = 'products'
+    url_view = 'products/'
     response_status, response_json = base_request(client=client, url_view=url_view)
     token = users[0]['token']
-    url_view = 'basket'
+    url_view = 'basket/'
     # post
     data = {'items': '[{"quantity": 1, "product_info": 1}, {"quantity": 1, "product_info": 2}]'}
     status, response_json = base_request(client, url_view=url_view, method='post', token=token, data=data)
@@ -243,7 +248,7 @@ def test_order(client, fill_base):
     status, response_json = base_request(client, url_view=url_view, token=token)
     basket_id = response_json[0]['id']
     # создание контакта
-    url_view = 'user/contact'
+    url_view = 'user/contact/'
     data = {'city': f'city_',
             'street': f'street_',
             'house': f'house_',
@@ -255,23 +260,31 @@ def test_order(client, fill_base):
     status, response_json = base_request(client, url_view=url_view, method='post', token=token, data=data)
     status, response_json = base_request(client, url_view=url_view, token=token)
     contact = response_json[0]['id']
+
+    url_view = 'order/'
+    # проверка запроса не сущестующего заказа
+    status, response_json = base_request(client, url_view=url_view, token=token)
+    print(response_json)
+    assert response_json == []
     # post - создание заказа
     data = {'id': basket_id,
             'contact': contact,
             }
-    url_view = 'order'
     status, response_json = base_request(client, url_view=url_view, method='post', token=token, data=data)
     assert status == 200
     assert response_json['Status'] == True
     assert response_json['task_id'] != None
     status, response_json = base_request(client, url_view=url_view, token=token)
     assert status == 200
-    status, response_json = base_request(client, url_view=url_view, token=token, params={'order': 1})
+    assert len(response_json) == 1
+    data = {'order': 1}
+    status, response_json_ = base_request(client, url_view=url_view, token=token, data=data,)
+    print(response_json_)
     assert status == 200
     assert response_json[0]['id'] == 1
 
-    'partner/orders'
-    url_view = 'partner/orders'
+    # 'partner/orders'
+    url_view = 'partner/orders/'
     # get
     # получить все заказы поставщика
     num_list = [1, 2]

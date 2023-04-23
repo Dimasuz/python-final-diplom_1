@@ -3,11 +3,12 @@ version: '3.9'
 services:
 
   redis:
-    image: redis:7.0.0-alpine3.15
+    image: redis:latest
     container_name: redis
     ports:
       - "6379:6379"
-
+    networks:
+      - backend
 
   postgres:
     image: postgres:14.3-alpine3.16
@@ -20,29 +21,30 @@ services:
     expose:
       - 5432
 
-
   web:
     build: .
     container_name: web
     environment:
       - SECRET_KEY=dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m
-      - DEBUG=0
-#      - DJANGO_DB=postgresql
-      - POSTGRES_HOST=localhost
+      - DEBUG=1
+      - DJANGO_DB=postgresql
+      - POSTGRES_HOST=postgres
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_PORT=5432
       - EMAIL_HOST=smtp.mail.ru
-      - MAIL_HOST_USER=netology-pdiplom@mail.ru
-      - EMAIL_HOST_PASSWORD=i~8W4rdRPFlo
-      - CELERY_BROKER_URL=redis://localhost:6379/0
-      - CELERY_RESULT_BACKEND=redis://localhost:6379/1
+      - MAIL_HOST_USER=5845889@mail.ru
+      - EMAIL_HOST_PASSWORD=64MzvEiEgAabP53MT0jX
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
     ports:
       - "8000:8000"
-#    depends_on:
-#      - redis
-#      - postgres
+    links:
+      - redis
+    depends_on:
+      - redis
+      - postgres
 
   celery:
     build:
@@ -51,21 +53,26 @@ services:
     container_name: celery
     environment:
       - SECRET_KEY=dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m
-      - DEBUG=0
-      - DJANGO_DB=DB_SQLITE
-      - POSTGRES_HOST=localhost
+      - DEBUG=1
+      - DJANGO_DB=postgresql
+      - POSTGRES_HOST=postgres
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_PORT=5432
       - EMAIL_HOST=smtp.mail.ru
-      - MAIL_HOST_USER=netology-pdiplom@mail.ru
-      - EMAIL_HOST_PASSWORD=i~8W4rdRPFlo
-      - CELERY_BROKER_URL=redis://localhost:6379/0
-      - CELERY_RESULT_BACKEND=redis://localhost:6379/1
+      - MAIL_HOST_USER=5845889@mail.ru
+      - EMAIL_HOST_PASSWORD=64MzvEiEgAabP53MT0jX
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
     links:
       - redis
       - web
     depends_on:
       - redis
       - web
+    networks:
+      - backend
+
+networks:
+  backend:

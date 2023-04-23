@@ -13,8 +13,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from ujson import loads as load_json
 from yaml import load as load_yaml, Loader
+
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 
 from backend.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, OrderItem, \
     Contact, ConfirmEmailToken
@@ -23,6 +27,10 @@ from backend.serializers import UserSerializer, CategorySerializer, ShopSerializ
 from backend.signals import new_user_registered, new_order, new_contact
 
 
+@extend_schema(
+    request=UserSerializer,
+    responses={201: UserSerializer},
+)
 class RegisterAccount(APIView):
     """
     Для регистрации покупателей
@@ -32,7 +40,7 @@ class RegisterAccount(APIView):
 
         # проверяем обязательные аргументы
         if {'first_name', 'last_name', 'email', 'password', 'company', 'position'}.issubset(request.data):
-            errors = {}
+            # errors = {} - do not be used
 
             # проверяем пароль на сложность
 
@@ -63,6 +71,10 @@ class RegisterAccount(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+@extend_schema(
+    request=UserSerializer,
+    responses={201: UserSerializer},
+)
 class ConfirmAccount(APIView):
     """
     Класс для подтверждения почтового адреса
@@ -86,9 +98,13 @@ class ConfirmAccount(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+@extend_schema(
+    request=UserSerializer,
+    responses={201: UserSerializer},
+)
 class AccountDetails(APIView):
     """
-    Класс для работы данными пользователя
+    Класс для работы с данными пользователя
     """
 
     # получить данные
@@ -127,6 +143,10 @@ class AccountDetails(APIView):
             return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
 
 
+@extend_schema(
+    request=UserSerializer,
+    responses={201: UserSerializer},
+)
 class LoginAccount(APIView):
     """
     Класс для авторизации пользователей
@@ -148,12 +168,18 @@ class LoginAccount(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
-class CategoryView(ListAPIView):
+# перепишем класс на ViewSet
+@extend_schema(
+    request=CategorySerializer,
+    responses={201: CategorySerializer},
+)
+class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Класс для просмотра категорий
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
 
 
 class ShopView(ListAPIView):
@@ -164,36 +190,68 @@ class ShopView(ListAPIView):
     serializer_class = ShopSerializer
 
 
-class ProductInfoView(APIView):
+# перепишем класс на ViewSet
+class ProductInfoViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Класс для поиска товаров
     """
-    def get(self, request, *args, **kwargs):
 
+    queryset = ProductInfo.objects.all()
+    serializer_class = ProductInfoSerializer
+
+    def get_queryset(self):
         query = Q(shop__state=True)
-        shop_id = request.query_params.get('shop_id')
-        category_id = request.query_params.get('category_id')
-        #< получение одного товара
-        product_id = request.query_params.get('product_id')
+        shop_id = self.request.query_params.get('shop_id')
+        category_id = self.request.query_params.get('category_id')
+        # < дбавлено получение одного товара
+        product_id = self.request.query_params.get('product_id')
         if product_id:
             query = query & Q(id=product_id)
-        #>
+        # >
         if shop_id:
             query = query & Q(shop_id=shop_id)
         if category_id:
             query = query & Q(product__category_id=category_id)
-
-        # фильтруем и отбрасываем дуликаты
-        queryset = ProductInfo.objects.filter(
+        return ProductInfo.objects.filter(
             query).select_related(
             'shop', 'product__category').prefetch_related(
             'product_parameters__parameter').distinct()
 
-        serializer = ProductInfoSerializer(queryset, many=True)
+#
+# class ProductInfoView(APIView):
+#     """
+#     Класс для поиска товаров
+#     """
+#     def get(self, request, *args, **kwargs):
+#
+#         query = Q(shop__state=True)
+#         shop_id = request.query_params.get('shop_id')
+#         category_id = request.query_params.get('category_id')
+#         #< получение одного товара
+#         product_id = request.query_params.get('product_id')
+#         if product_id:
+#             query = query & Q(id=product_id)
+#         #>
+#         if shop_id:
+#             query = query & Q(shop_id=shop_id)
+#         if category_id:
+#             query = query & Q(product__category_id=category_id)
+#
+#         # фильтруем и отбрасываем дуликаты
+#         queryset = ProductInfo.objects.filter(
+#             query).select_related(
+#             'shop', 'product__category').prefetch_related(
+#             'product_parameters__parameter').distinct()
+#
+#         serializer = ProductInfoSerializer(queryset, many=True)
+#
+#         return Response(serializer.data)
 
-        return Response(serializer.data)
 
-
+@extend_schema(
+    request=OrderSerializer,
+    responses={201: OrderSerializer},
+)
 class BasketView(APIView):
     """
     Класс для работы с корзиной пользователя
@@ -289,6 +347,10 @@ class BasketView(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+@extend_schema(
+    request=ProductInfoSerializer,
+    responses={201: ProductInfoSerializer},
+)
 class PartnerUpdate(APIView):
     """
     Класс для обновления прайса от поставщика
@@ -340,6 +402,10 @@ class PartnerUpdate(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+@extend_schema(
+    request=ShopSerializer,
+    responses={201: ShopSerializer},
+)
 class PartnerState(APIView):
     """
     Класс для работы со статусом поставщика
@@ -375,6 +441,10 @@ class PartnerState(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+@extend_schema(
+    request=OrderSerializer,
+    responses={201: OrderSerializer},
+)
 class PartnerOrders(APIView):
     """
     Класс для получения заказов поставщиками
@@ -431,6 +501,10 @@ class PartnerOrders(APIView):
         return Response(serializer.data)
 
 
+@extend_schema(
+    request=ContactSerializer,
+    responses={201: ContactSerializer},
+)
 class ContactView(APIView):
     """
     Класс для работы с контактами покупателей
@@ -506,6 +580,10 @@ class ContactView(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+@extend_schema(
+    request=OrderSerializer,
+    responses={201: OrderSerializer},
+)
 class OrderView(APIView):
     """
     Класс для получения и размешения заказов пользователями
@@ -516,7 +594,7 @@ class OrderView(APIView):
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
 
-        #< получение покупателем одного заказа по id
+        #< добавлено - получение покупателем одного заказа по id
         order_id = request.query_params.get('order', default=None)
 
         if order_id and order_id.isdigit():
@@ -566,6 +644,10 @@ class OrderView(APIView):
 
 
 #< добавлено - Возможность добавления (удаление, изменение) настраиваемых полей (характеристик) товаров
+@extend_schema(
+    request=ParameterSerializer,
+    responses={201: ParameterSerializer},
+)
 class ParameterView(APIView):
     """
     Класс для работы с характеристиками товаров
@@ -631,7 +713,7 @@ class ParameterView(APIView):
 
 class CeleryStatus(APIView):
     """
-    Класс для получения статуса отлооженных задач
+    Класс для получения статуса отлооженных задач в Celery
     """
 
     # получить статус задачи в celery

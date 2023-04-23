@@ -21,8 +21,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m'
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", "dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m"
 )
@@ -45,6 +43,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_rest_passwordreset',
+    'drf_spectacular',
+#< The following apps are required for allauth:
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # ... include the providers to enable:
+    'allauth.socialaccount.providers.mailru',
+# добавлено для использования django-silk
+    'silk'
+#>
 ]
 
 MIDDLEWARE = [
@@ -55,6 +64,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+#< добавлено для использования django-silk
+    'silk.middleware.SilkyMiddleware',
+#>
 ]
 
 ROOT_URLCONF = 'netology_pd_diplom.urls'
@@ -101,23 +113,6 @@ DATABASES_ALL = {
 
 DATABASES = {"default": DATABASES_ALL[os.environ.get("DJANGO_DB", DB_SQLITE)]}
 
-# DATABASES = {
-#
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-#
-#     # 'default': {
-#     #     'ENGINE': 'django.db.backends.postgresql',
-#     #     'NAME': 'diplom_db',
-#     #     'USER': 'diplom_user',
-#     #     'PASSWORD': 'password',
-#     #     'HOST': '127.0.0.1',
-#     #     'PORT': '5433',
-#     # }
-# }
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
@@ -160,11 +155,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_USE_TLS = True
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.mail.ru")
-EMAIL_HOST_USER = os.environ.get("MAIL_HOST_USER", "netology-pdiplom@mail.ru")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "netology-pdiplom@mail.ru")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "i~8W4rdRPFlo")
 EMAIL_PORT = '465'
 EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
+#< добавлено для устранения ошибки SMTP:550 при регистрации через allauth
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+#>
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -181,7 +179,18 @@ REST_FRAMEWORK = {
         # 'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+#< добавлен троттлинг
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    },
+#>
+    # 'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 INTERNAL_IPS = [
@@ -196,3 +205,38 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+#< добавлено для создания документации через spectacula
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Diplom Netology API',
+    'DESCRIPTION': 'Diplom Luzanov Dmitry',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+#>
+#< добавлено для настройки аутентификации allauth
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+#< уточнен id сайта exemple.com, без этого при обращении к /admin/ выдавал ошибку:
+# "django.contrib.sites.models.Site.DoesNotExist: Site matching query does not exist"
+# Решение - в консоле:
+# python manage.py shell
+# from django.contrib.sites.models import Site
+# Site.objects.create(name='example.com',domain='example.com').save()
+# s=Site.objects.filter(name='example.com')[0]
+# s.id
+# 4
+SITE_ID = 4
+#>
+
+# Specifies the login method to use for allauth
+ACCOUNT_AUTHENTICATION_METHOD='email'
+ACCOUNT_EMAIL_REQUIRED=True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
+#>

@@ -4,9 +4,31 @@ from client_api import *
 
 #'user/register'
 user_register_ = 2
-num = 1
+num = 5
 if user_register_ == 1:
     user_register(num)
+
+if user_register_ == 9:
+    url_view = 'user/register/'
+    url = url_base + url_view
+    print('POST', url_view)
+    num = 9
+    email = '6021185@mail.ru'
+    data ={'first_name': f'first_name_{num}',
+          'last_name': f'last_name_{num}',
+          'email': email,
+          'company': f'company_{num}',
+          'position': f'position_{num}',
+          'contacts': f'contacts_{num}',
+          'password': f'Password_{num}',
+          'type': 'shop'
+          }
+    response = requests.post(url,
+                             data=data,
+                             )
+    print(response.status_code)
+    if response.json():
+        print(response.json())
 # -------------------------------------------------------
 
 #'user/details'
@@ -18,10 +40,17 @@ if user_details_ == 1:
 
 #'user/register/confirm'
 user_confirm_ = 2
-num = 4
-token = 'fa35ce31e5ab34a4e6dcef451292bb'
+num = 1
+token = 'e4f774a156b3f3377422'
 if user_confirm_ == 1:
     confirm(num, token)
+
+if user_confirm_ == 9:
+    url_view = 'user/register/confirm/'
+    data= {'email': '6021185@mail.ru',
+               'token': 'a263a7a0d56',
+               }
+    base_request(url_view=url_view, method='post', data=data)
 
 # -------------------------------------------------------
 #'partner/update'
@@ -42,7 +71,7 @@ if partner_orders_ == 1:
 #'shops'
 shops_ = 2
 if shops_ == 1:
-    url_view = 'shops'
+    url_view = 'shops/'
     base_request(url_view=url_view)
 # -------------------------------------------------------
 
@@ -63,7 +92,7 @@ if user_contact_ == 11:
 # -------------------------------------------------------
 #'user/login'
 user_login_ = 2
-num = 0
+num = 5
 if user_login_ == 1:
     login(num)
 # -------------------------------------------------------
@@ -73,7 +102,7 @@ if user_login_ == 1:
 # -------------------------------------------------------
 #'categories'
 categories_ = 2
-url_view = 'categories'
+url_view = 'categories/'
 if categories_ == 1:
     base_request(url_view=url_view)
 # -------------------------------------------------------
@@ -81,9 +110,8 @@ if categories_ == 1:
 #'products'
 products_ = 2
 if products_ == 1:
-    url_view = 'products'
+    url_view = 'products/'
     shop_id = int(input('Введите shop_id = '))
-    print(shop_id)
     if shop_id == 0:
         shop_id = None
     category_id = int(input('Введите category_id = '))
@@ -213,5 +241,3 @@ signals.py
 
 
 #----------------------------------------------------------------
-
-

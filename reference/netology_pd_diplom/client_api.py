@@ -41,7 +41,7 @@ def get_headers(content_type=None):
 def login(num=None):
     if not num:
         num = int(input('Введите номер пользователя (или 0) = '))
-    url_view = 'user/login'
+    url_view = 'user/login/'
     url = url_base + url_view
     print()
     print('POST', url_view)
@@ -72,7 +72,7 @@ def login(num=None):
 
 
 def user_register(num):
-    url_view = 'user/register'
+    url_view = 'user/register/'
     url = url_base + url_view
     print('POST', url_view)
     num = int(input('Введите номер пользователя = '))
@@ -95,7 +95,7 @@ def user_register(num):
 # # --------------------------------'Errors': 'Неправильно указан токен или email'
 def confirm(num, token):
     if token:
-        url_view = 'user/register/confirm'
+        url_view = 'user/register/confirm/'
         data= {'email': f'email_{num}@mail.ru',
                'token': token,
                }
@@ -103,7 +103,7 @@ def confirm(num, token):
 
 
 def user_details(method, data=None):
-    url_view = 'user/details'
+    url_view = 'user/details/'
     headers, _ = get_headers()
     if method == 'post':
         k = input('Введите изменяемую характеристику: ')
@@ -113,7 +113,7 @@ def user_details(method, data=None):
 
 
 def partner_state(method, data=None):
-    url_view = 'partner/state'
+    url_view = 'partner/state/'
     headers, _ = get_headers()
     if method == 'post':
         state = input('Введите state: ')
@@ -122,13 +122,13 @@ def partner_state(method, data=None):
 
 
 def partner_update(data):
-    url_view = 'partner/update'
+    url_view = 'partner/update/'
     headers, _ = get_headers(content_type='application/x-www-form-urlencoded')
     base_request(url_view=url_view, method='post', headers=headers, data=data)
 
 
 def parameter(method: str = 'get', data=None):
-    url_view = 'parameter'
+    url_view = 'parameter/'
     headers, _ = get_headers()
     if method == 'post':
         name = input('Введите новое наименование характеристики: ')
@@ -144,7 +144,7 @@ def parameter(method: str = 'get', data=None):
 
 
 def user_contact(method='get', data=None):
-    url_view = 'user/contact'
+    url_view = 'user/contact/'
     headers, num = get_headers()
     if method == 'post':
         data = {'city': f'city_{num}',
@@ -166,7 +166,7 @@ def user_contact(method='get', data=None):
 
 
 def user_contact_test(method, email, password):
-    url_view = 'user/login'
+    url_view = 'user/login/'
     url = url_base + url_view
     data= {'email': email,
            'password': password,
@@ -189,11 +189,11 @@ def user_contact_test(method, email, password):
                 'street': f'street_test',
                 'phone': f'phone_test'
                 }
-    url_view = 'user/contact'
+    url_view = 'user/contact/'
     task = base_request(url_view=url_view, method=method, headers=headers, data=data)
     task_id = task['task_id']
     if task_id:
-        url_view = 'status'
+        url_view = 'status/'
         params = {'task_id': task_id}
         status = "PENDING"
         while status == "PENDING" or status == "STARTED":
@@ -214,13 +214,13 @@ def status(task_id=None):
 
 # ---------------------------------
 def partner_state(method, data=None):
-    url_view = 'partner/state'
+    url_view = 'partner/state/'
     headers, _ = get_headers()
     base_request(url_view=url_view, method=method, headers=headers, data=data)
 
 
 def basket(method: str = 'get', data=None):
-    url_view = 'basket'
+    url_view = 'basket/'
     token, _ = login()
     authorization = f"Token {token}"
     content_type = 'application/x-www-form-urlencoded'
@@ -231,7 +231,7 @@ def basket(method: str = 'get', data=None):
 
 
 def order(method: str = 'get', data=None):
-    url_view = 'order'
+    url_view = 'order/'
     headers, _ = get_headers(content_type='application/x-www-form-urlencoded')
     if method == 'get':
         order = input('Введите id заказа или ENTER, чтобы получить все заказы: ')
@@ -251,14 +251,9 @@ def order(method: str = 'get', data=None):
         params = None
     base_request(url_view=url_view, method=method, headers=headers, data=data, params=params)
 
-# post
-# data = {"id": id, "contact": 1}
-# delete
-# data = {"items": 2}
-
 
 def partner_orders(method: str = 'get', data=None):
-    url_view = 'partner/orders'
+    url_view = 'partner/orders/'
     headers, _ = get_headers()
     if method == 'put':
         id = int(input('Введите id товара в заказе: '))

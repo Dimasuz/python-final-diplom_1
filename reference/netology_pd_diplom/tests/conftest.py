@@ -1,6 +1,6 @@
 import time
 import pytest
-from backend.models import User, Shop, Category, Parameter, Product, ProductInfo, ProductParameter, Order
+from backend.models import User, Shop, Category, Parameter, Product, ProductInfo, ProductParameter
 
 
 URL_BASE = 'http://127.0.0.1:8000/api/v1/'
@@ -18,7 +18,7 @@ def fill_base(client):
     users = []
     for i in range(4):
         num = i + 1
-        url_view = 'user/register'
+        url_view = 'user/register/'
         url = URL_BASE + url_view
         data = {'first_name': f'first_name_{num}',
                 'last_name': f'last_name_{num}',
@@ -28,14 +28,12 @@ def fill_base(client):
                 'contacts': f'contacts_{num}',
                 'password': f'Password_{num}'
                 }
-        response = client.post(url,
-                               data=data,
-                               )
+        client.post(url, data=data,)
         user =  {'email': f'email_{num}@mail.ru',
                 'password': f'Password_{num}',
                  'type': 'buyer',
                 }
-        url_view = 'user/login'
+        url_view = 'user/login/'
         url = URL_BASE + url_view
         data = {'email': user['email'],
                 'password': user['password'],
@@ -46,23 +44,18 @@ def fill_base(client):
         user['token'] = response.json()['Token']
         user_auth = User.objects.get(email=user['email'])
         client.force_authenticate(user=user_auth)
-        url_view = 'user/details'
+        url_view = 'user/details/'
         url = URL_BASE + url_view
         response = client.get(url, headers={'Authorization': f"Token {user['token']}", }, )
         user['id'] = response.json()['id']
         if num != 1:
-            url_view = 'user/details'
-            url = URL_BASE + url_view
             authorization = f"Token {user['token']}"
             headers = {'Authorization': authorization, }
-            response = client.post(url, headers=headers, data={'type': 'shop', })
+            client.post(url, headers=headers, data={'type': 'shop', })
             user['type'] = 'shop'
         users.append(user)
     for num in [1, 2]:
         shop = users[num]
-        url_view = 'user/details'
-        url = URL_BASE + url_view
-        response = client.get(url, headers={'Authorization': f"Token {shop['token']}", }, )
         data = {'shop': f'shop_{num}',
                 'categories': [{'id': num, 'name': f'categories_{num}'},
                                {'id': int(f'{num}{num}'), 'name': f'categories_{num}{num}'},
@@ -101,7 +94,7 @@ def fill_base(client):
 # фикстура создания пользователя
 @pytest.fixture()
 def user_create(client):
-    url_view = 'user/register'
+    url_view = 'user/register/'
     url = URL_BASE + url_view
     num = time.time()
     data ={'first_name': f'first_name_{num}',
@@ -125,7 +118,7 @@ def user_create(client):
 # фикстура логина пользователя
 @pytest.fixture()
 def user_create_login(client, user_create):
-    url_view = 'user/login'
+    url_view = 'user/login/'
     url = URL_BASE + url_view
     user = user_create
     email = user['email']

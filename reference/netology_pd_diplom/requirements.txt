@@ -13,9 +13,17 @@ pytest-django==4.5.2
 model-bakery==1.10.3
 
 cachetools==5.3.0
-celery==5.2.7
+
 celery[redis]
-redis==4.4.0
+redis
+redis-server
+
 pytz
 
 gunicorn==20.1.0
+
+drf-spectacular
+
+django-allauth
+
+django-silk

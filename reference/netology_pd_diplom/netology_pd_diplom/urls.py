@@ -18,5 +18,10 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include('backend.urls', namespace='backend'))
+    path('api/v1/', include('backend.urls', namespace='backend')),
+# добавлено для использования allauth
+    path('accounts/', include('allauth.urls')),
+#< добавлено для использования django-silk
+    path('silk/', include('silk.urls', namespace='silk')),
+#>
 ]

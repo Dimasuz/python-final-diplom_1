@@ -1,10 +1,10 @@
 import time
 import pprint
 import pytest
+from django.contrib.auth import authenticate
 from model_bakery import baker
 import warnings
-from backend.models import Shop, User, Category
-
+from backend.models import Shop, User, Category, ConfirmEmailToken
 
 warnings.filterwarnings(action="ignore")
 
@@ -40,26 +40,50 @@ def test_example():
 
 
 # check /api/v1/user/register
-def test_user_register(user_create):
-    user = user_create
+def test_user_register(client, register_user):
+    user = register_user
     assert user['status_code'] == 200
     assert user['status'] == True
+    assert user['task_id']
 
 
-# check /api/v1/user/login
-def test_login(client, user_create):
-    user = user_create
-    email = user['email']
-    password = user['password']
-    # user login
-    url_view = 'user/login/'
+# check /api/v1/user/register/confirm
+def test_register_confirm(client,register_user):
+    user = register_user
+    # user conformation
+    url_view = 'user/register/confirm/'
     url = URL_BASE + url_view
-    data = {'email': email,
-            'password': password,
+    data = {'email': user['email'],
+            'token': user['conform_token'],
             }
     response = client.post(url,
                            data=data,
                            )
+
+    assert response.json()['Status'] == True
+    assert response.status_code == 200
+
+
+# check /api/v1/user/login
+def test_login(client,register_user):
+    user = register_user
+    # user conformation for login
+    url_view = 'user/register/confirm/'
+    url = URL_BASE + url_view
+    data = {'email': user['email'],
+            'token': user['conform_token'],
+            }
+    client.post(url, data=data,)
+    # user login
+    url_view = 'user/login/'
+    url = URL_BASE + url_view
+    data = {'email': user['email'],
+            'password': user['password'],
+            }
+    response = client.post(url,
+                           data=data,
+                           )
+    assert response.status_code == 200
     if response.status_code == 200:
         if response.json()['Status'] == False:
             token = None
@@ -67,14 +91,13 @@ def test_login(client, user_create):
             token = response.json()['Token']
     else:
         token = None
-
     assert token != None
 
 
 # 'parameter'
 def test_parameter(client, user_create_login):
     url_view = 'parameter/'
-    token = user_create_login['token']
+    user, token = user_create_login
     # post
     name = f'name_{time.time()}'
     data = {'name': name,}
@@ -129,7 +152,7 @@ def test_shops(client):
 # 'user/details'
 def test_user_details(client, user_create_login):
     url_view = 'user/details/'
-    token = user_create_login['token']
+    user, token = user_create_login
     # get
     status, response_json = base_request(client, url_view=url_view, method='get', token=token)
     assert status == 200
@@ -164,8 +187,7 @@ def test_products(client, fill_base):
 
 def test_user_contact(client, user_create_login):
     url_view = 'user/contact/'
-    user = user_create_login
-    token = user_create_login['token']
+    user, token = user_create_login
     num = 1
     # post
     data = {'city': f'city_{num}',

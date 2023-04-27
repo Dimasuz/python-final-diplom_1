@@ -1,10 +1,10 @@
 import time
 from client_api import *
 
-
+# ------------------------------------------------------------------------
 #'user/register'
 user_register_ = 2
-num = 5
+num = 1
 if user_register_ == 1:
     user_register(num)
 
@@ -32,7 +32,7 @@ if user_register_ == 9:
 # -------------------------------------------------------
 
 #'user/details'
-user_details_ = 1
+user_details_ = 2
 if user_details_ == 1:
     user_details_method = input('Введите method (get или post) = ')
     user_details(method=user_details_method)
@@ -41,7 +41,7 @@ if user_details_ == 1:
 #'user/register/confirm'
 user_confirm_ = 2
 num = 1
-token = 'e4f774a156b3f3377422'
+token = 'ce50fea34a6e2ecf86974777688d7ef5fa2'
 if user_confirm_ == 1:
     confirm(num, token)
 
@@ -241,3 +241,13 @@ signals.py
 
 
 #----------------------------------------------------------------
+
+# проверка портов
+# sudo netstat -ntlp
+# остановка процесса на порте
+# sudo service 10386/redis-server stop
+#
+
+# python manage.py makemigrations backend
+# python manage.py migrate
+# python manage.py createsuperuser

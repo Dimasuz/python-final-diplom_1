@@ -14,11 +14,14 @@ from netology_pd_diplom.tasks import send_email
 # new_order = Signal(
 #     providing_args=['user_id'],
 # )
+# изменения в связи с новой версией Django
 new_user_registered: Signal = Signal('user_id')
 
 new_order: Signal  = Signal('user_id')
 
 new_contact: Signal  = Signal('user_id')
+
+# формирование и отправка писем перенесены в tasks.py для применения в celery
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, **kwargs):

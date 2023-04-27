@@ -2,8 +2,6 @@ from django.urls import path, include
 from django_rest_passwordreset.views import reset_password_request_token, reset_password_confirm
 from rest_framework.routers import DefaultRouter
 
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-
 from backend.views import PartnerUpdate, RegisterAccount, LoginAccount, CategoryViewSet, ShopView, BasketView, \
     AccountDetails, ContactView, OrderView, PartnerState, PartnerOrders, ConfirmAccount, ParameterView, CeleryStatus, \
     ProductInfoViewSet
@@ -36,9 +34,5 @@ urlpatterns = [
     path('status/', CeleryStatus.as_view(), name='status'),
 #< url for viewset классов
     path('', include(router.urls)),
-# доступ к описанию проекта из API
-    path('schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 #>
 ]

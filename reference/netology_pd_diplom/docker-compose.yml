@@ -1,5 +1,8 @@
 version: '3.9'
 
+networks:
+  backend:
+
 services:
 
   redis:
@@ -8,7 +11,9 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - backend
+      backend:
+        aliases:
+          - redis
 
   postgres:
     image: postgres:14.3-alpine3.16
@@ -20,6 +25,10 @@ services:
       - POSTGRES_PASSWORD=postgres
     expose:
       - 5432
+    networks:
+      backend:
+        aliases:
+          - postgres
 
   web:
     build: .
@@ -45,6 +54,10 @@ services:
     depends_on:
       - redis
       - postgres
+    networks:
+      backend:
+        aliases:
+          - web
 
   celery:
     build:
@@ -72,7 +85,8 @@ services:
       - redis
       - web
     networks:
-      - backend
-
-networks:
-  backend:
+      backend:
+        aliases:
+          - celery
+    volumes:
+      - .:/usr/src/app

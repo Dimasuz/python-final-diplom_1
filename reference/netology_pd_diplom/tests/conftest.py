@@ -1,7 +1,8 @@
 import time
 import pytest
-from backend.models import User, Shop, Category, Parameter, Product, ProductInfo, ProductParameter
-
+from rest_framework.authtoken.models import Token
+from backend.models import User, Shop, Category, Parameter, Product, ProductInfo, ProductParameter, ConfirmEmailToken
+from model_bakery import baker
 
 URL_BASE = 'http://127.0.0.1:8000/api/v1/'
 
@@ -12,48 +13,51 @@ def client():
     return APIClient()
 
 
+# фикстура для регистрации и получения ConfirmEmailToken
+@pytest.fixture
+def register_user(client):
+    url_view = 'user/register/'
+    url = URL_BASE + url_view
+    num = time.time()
+    email = f'email_{num}@mail.ru'
+    password = f'Password_{num}'
+    data = {'first_name': f'first_name_{num}',
+            'last_name': f'last_name_{num}',
+            'email': email,
+            'company': f'company_{num}',
+            'position': f'position_{num}',
+            'password': password,
+            }
+    response = client.post(url,
+                           data=data,
+                           )
+    user_id = User.objects.all().filter(email=email).values_list('id', flat=True).get()
+    conform_token = ConfirmEmailToken.objects.filter(user_id=user_id).values_list('key', flat=True).get()
+    user = {'status_code': response.status_code,
+            'status': response.json()['Status'],
+            'task_id': response.json()['task_id'],
+            'email': email,
+            'password': password,
+            'conform_token': conform_token,
+            }
+    return user
+
+
 # фикстура для наполенения базы данных
 @pytest.fixture
 def fill_base(client):
     users = []
     for i in range(4):
-        num = i + 1
-        url_view = 'user/register/'
-        url = URL_BASE + url_view
-        data = {'first_name': f'first_name_{num}',
-                'last_name': f'last_name_{num}',
-                'email': f'email_{num}@mail.ru',
-                'company': f'company_{num}',
-                'position': f'position_{num}',
-                'contacts': f'contacts_{num}',
-                'password': f'Password_{num}'
-                }
-        client.post(url, data=data,)
-        user =  {'email': f'email_{num}@mail.ru',
-                'password': f'Password_{num}',
-                 'type': 'buyer',
-                }
-        url_view = 'user/login/'
-        url = URL_BASE + url_view
-        data = {'email': user['email'],
-                'password': user['password'],
-                }
-        response = client.post(url,
-                               data=data,
-                               )
-        user['token'] = response.json()['Token']
-        user_auth = User.objects.get(email=user['email'])
-        client.force_authenticate(user=user_auth)
-        url_view = 'user/details/'
-        url = URL_BASE + url_view
-        response = client.get(url, headers={'Authorization': f"Token {user['token']}", }, )
-        user['id'] = response.json()['id']
-        if num != 1:
-            authorization = f"Token {user['token']}"
-            headers = {'Authorization': authorization, }
-            client.post(url, headers=headers, data={'type': 'shop', })
-            user['type'] = 'shop'
-        users.append(user)
+        if i != 0:
+            user = baker.make(User,
+                              type='shop',
+                              is_active=True)
+        else:
+            user = baker.make(User,
+                              is_active=True)
+        token, _ = Token.objects.get_or_create(user=user)
+
+        users.append({'id': user.id, 'email': user.email, 'token': token})
     for num in [1, 2]:
         shop = users[num]
         data = {'shop': f'shop_{num}',
@@ -91,52 +95,9 @@ def fill_base(client):
     return users
 
 
-# фикстура создания пользователя
-@pytest.fixture()
-def user_create(client):
-    url_view = 'user/register/'
-    url = URL_BASE + url_view
-    num = time.time()
-    data ={'first_name': f'first_name_{num}',
-          'last_name': f'last_name_{num}',
-          'email': f'email_{num}@mail.ru',
-          'company': f'company_{num}',
-          'position': f'position_{num}',
-          'contacts': f'contacts_{num}',
-          'password': f'Password_{num}'
-          }
-    response = client.post(url,
-                             data=data,
-                             )
-    return {'status_code': response.status_code,
-            'status': response.json()['Status'],
-            'email': f'email_{num}@mail.ru',
-            'password': f'Password_{num}',
-             }
-
-
 # фикстура логина пользователя
 @pytest.fixture()
-def user_create_login(client, user_create):
-    url_view = 'user/login/'
-    url = URL_BASE + url_view
-    user = user_create
-    email = user['email']
-    password = user['password']
-    data= {'email': email,
-           'password': password,
-           }
-    response = client.post(url,
-                           data=data,
-                           )
-    if response.status_code == 200:
-        if response.json()['Status'] == False:
-            token = None
-        else:
-            token = response.json()['Token']
-            user_auth = User.objects.get(email=email)
-            client.force_authenticate(user=user_auth)
-    else:
-        token = None
-    user['token'] = token
-    return user
+def user_create_login(client):
+    user = baker.make(User, is_active=True)
+    token, _ = Token.objects.get_or_create(user=user)
+    return user, token

@@ -8,6 +8,7 @@ from django_rest_passwordreset.tokens import get_token_generator
 STATE_CHOICES = (
     ('basket', 'Статус корзины'),
     ('new', 'Новый'),
+# переносим статусы в STATE_CHOICES_ITEM для рвботы с разными паставщиками в одном заказе
     # ('confirmed', 'Подтвержден'),
     # ('assembled', 'Собран'),
     # ('sent', 'Отправлен'),
@@ -65,8 +66,8 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
-
-        return self._create_user(email, password, **extra_fields)
+        # добавим статус суперюзера is_active=True
+        return self._create_user(email, password, is_active=True, **extra_fields)
 
 
 class User(AbstractUser):
@@ -91,7 +92,9 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         _('active'),
-        default=True,
+        # устанавливаем True, если проблемы со входом superuser
+        # default=True,
+        default=False,
         help_text=_(
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'
@@ -111,12 +114,14 @@ class User(AbstractUser):
 class Shop(models.Model):
     name = models.CharField(max_length=50, verbose_name='Название')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
-    # user = models.OneToOneField(User, verbose_name='Пользователь',
-    user = models.ForeignKey(User, verbose_name='Пользователь', related_name='shop',
+    user = models.OneToOneField(User, verbose_name='Пользователь',
+    # если проблемы в миграции:
+    # user = models.ForeignKey(User, verbose_name='Пользователь',
+                                related_name='shop',
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
     state = models.BooleanField(verbose_name='статус получения заказов', default=True)
-    #<
+    #< добавляем стоимость доствки поставщика
     delivery = models.PositiveIntegerField(verbose_name='Цена доставки поставщиком', default=0)
     #>
 
@@ -257,6 +262,7 @@ class OrderItem(models.Model):
                                      blank=True,
                                      on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name='Количество')
+    # добавляем статус для работы с разными поставщиками в одном заказе
     state = models.CharField(verbose_name='Статус позиции в заказе', choices=STATE_CHOICES_ITEM, max_length=15,
                              blank=True, null=True,)
 

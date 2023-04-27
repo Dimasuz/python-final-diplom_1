@@ -68,6 +68,7 @@ class ProductInfoSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
+        # добавим в выдачу state для работы с разными поставщиками в одном заказе
         fields = ('id', 'product_info', 'quantity', 'order', 'state',)
         read_only_fields = ('id',)
         extra_kwargs = {

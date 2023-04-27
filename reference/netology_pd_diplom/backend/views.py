@@ -27,6 +27,8 @@ from backend.serializers import UserSerializer, CategorySerializer, ShopSerializ
 from backend.signals import new_user_registered, new_order, new_contact
 
 
+# для документациии OPEN API добавлены декораторы @extend_schema
+
 @extend_schema(
     request=UserSerializer,
     responses={201: UserSerializer},
@@ -62,8 +64,8 @@ class RegisterAccount(APIView):
                     user = user_serializer.save()
                     user.set_password(request.data['password'])
                     user.save()
+                    # для применения celery возвращаем task задачи для возможности контроля ее выполнения
                     send_mail = new_user_registered.send(sender=self.__class__, user_id=user.id)
-                    # return JsonResponse({'Status': True})
                     return JsonResponse({'Status': True, 'task_id': send_mail[0][1]})
                 else:
                     return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
@@ -294,11 +296,8 @@ class BasketView(APIView):
                             return JsonResponse({'Status': False, 'Errors': str(error)})
                         else:
                             objects_created += 1
-
                     else:
-
                         return JsonResponse({'Status': False, 'Errors': serializer.errors})
-
                 return JsonResponse({'Status': True, 'Создано объектов': objects_created})
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
@@ -334,7 +333,7 @@ class BasketView(APIView):
             try:
                 items_dict = load_json(items_sting)
             except ValueError:
-                JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
+                return JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
             else:
                 basket, _ = Order.objects.get_or_create(user_id=request.user.id, state='basket')
                 objects_updated = 0
@@ -536,7 +535,7 @@ class ContactView(APIView):
                 #>
                 return JsonResponse({'Status': True, 'task_id': send_mail[0][1]})
             else:
-                JsonResponse({'Status': False, 'Errors': serializer.errors})
+                return JsonResponse({'Status': False, 'Errors': serializer.errors})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
@@ -575,7 +574,7 @@ class ContactView(APIView):
                         serializer.save()
                         return JsonResponse({'Status': True})
                     else:
-                        JsonResponse({'Status': False, 'Errors': serializer.errors})
+                        return JsonResponse({'Status': False, 'Errors': serializer.errors})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
@@ -627,6 +626,7 @@ class OrderView(APIView):
                         user_id=request.user.id, id=request.data['id']).update(
                         contact_id=request.data['contact'],
                         state='new')
+                    # для работы с товарами от разных поставщиков обновляем статус OrderItem
                     items_updated = OrderItem.objects.filter(
                         order_id=request.data['id']).update(
                         state='new')
@@ -635,8 +635,7 @@ class OrderView(APIView):
                     return JsonResponse({'Status': False, 'Errors': 'Неправильно указаны аргументы'})
                 else:
                     if is_updated and items_updated:
-                        # new_order.send(sender=self.__class__, user_id=request.user.id)
-                        # return JsonResponse({'Status': True})
+                        # для применения celery возвращаем task задачи для возможности контроля ее выполнения
                         send_mail = new_order.send(sender=self.__class__, user_id=request.user.id)
                         return JsonResponse({'Status': True, 'task_id': send_mail[0][1]})
 
@@ -711,6 +710,7 @@ class ParameterView(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 #>
 
+# для полчения статуса задач в celery добавим view class
 class CeleryStatus(APIView):
     """
     Класс для получения статуса отлооженных задач в Celery

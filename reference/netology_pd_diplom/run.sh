@@ -2,7 +2,7 @@
 
 python manage.py collectstatic --noinput --clear
 
-python manage.py makemigrations
+python manage.py makemigrations backend
 
 until python manage.py migrate
 do

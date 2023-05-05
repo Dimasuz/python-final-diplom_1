@@ -33,7 +33,7 @@ services:
       retries: 5
       start_period: 10s
     volumes:
-#      - ./logs:/var/log
+      - ./logs:/var/log
       - pgdata:/var/lib/postgresql/data
     expose:
       - 5432
@@ -49,10 +49,12 @@ services:
     container_name: web
     env_file:
       - .env
-    ports:
-      - "8000:80"
+    expose:
+      - 8000
+#    ports:
+#      - "8000:8000"
     volumes:
-#      - .:/usr/src/app
+      - .:/usr/src/app
       - static:/usr/src/app/static
       - media:/usr/src/app/media
     links:
@@ -83,8 +85,8 @@ services:
       backend:
         aliases:
           - celery
-#    volumes:
-#      - .:/usr/src/app
+    volumes:
+      - .:/usr/src/app
 
 
   pgadmin:

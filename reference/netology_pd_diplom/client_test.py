@@ -2,7 +2,9 @@ import time
 import requests
 from pprint import pprint
 
-url_base = 'http://0.0.0.0:8000/api/v1/'
+url = '0.0.0.0:8000'
+
+url_base = 'http://' + url + '/api/v1/'
 
 def base_request(url_view='', method='get', headers=None, data=None, params=None):
     url = url_base + url_view

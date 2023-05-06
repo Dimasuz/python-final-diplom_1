@@ -2,7 +2,7 @@ import time
 import requests
 from pprint import pprint
 
-url = '0.0.0.0:8000'
+url = '0.0.0.0:1337'
 
 url_base = 'http://' + url + '/api/v1/'
 

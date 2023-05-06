@@ -1,0 +1,221 @@
+- проверка соединения
+ping 194.67.111.29
+
+Создание ключа:
+- создать
+sudo ssh-keygen
+- копировать
+sudo cat ~/.ssh/id_rsa.pub
+
+- подключаемся к серверу
+ssh root@194.67.111.29
+
+- создаем нового пользователя
+adduser diplom
+- назначаем админом
+usermod diplom -aG sudo
+- переключаемся на него
+su diplom
+- переходим в домашнюю директорию
+cd ~
+
+sudo apt update
+sudo apt install python3-pip
+
+- проверяем версии
+git --version
+python3 --version
+
+- копируем ссылку на github и делаем git clone
+git clone https://github.com/Dimasuz/python-final-diplom_1.git
+- копируем рабочий каталог в корень
+sudo cp -rT /net... ~
+
+- создаем файл зависимостей
+nano .env
+<-----------------------------------------------
+SECRET_KEY=dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m
+DEBUG=0
+DJANGO_DB=postgresql
+POSTGRES_HOST=postgres
+POSTGRES_NAME=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_PORT=5432
+PGDATA=/var/lib/postgresql/data
+EMAIL_HOST=smtp.mail.ru
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/1
+-------------------------------------->
+
+
+sudo docker-compose up redis -d
+sudo docker-compose up postgres -d
+sudo docker-compose up pgadmin -d
+
+sudo docker-compose up web
+
+sudo docker-compose up nginx -d
+
+- войти в контейнер
+sudo docker exec -it web bash
+- создать суперпользователя
+sudo pyrhon manage.py createsuperuser
+
+sudo docker-compose up celery
+
+
+
+
+=======================================================
+
+Управление портами:
+- посмотреть каким PID процессом занят порт
+lsof -i :1313
+- убить процесс на порте  by PID:
+kill -9 2944
+- посмотреть все порты
+sudo netstat -ltnp
+sudo netstat -nl -p tcp
+-если порт занят его надо освободить
+fuser -k 8000/tcp
+
+
+остановка сервиса доккера
+sudo service docker stop
+sudo systemctl stop docker.socket
+sudo rm /var/lib/docker/network/files/local-kv.db
+sudo service docker start
+docker system prune
+
+
+остановка redis
+/etc/init.d/redis-server stop
+/etc/init.d/redis-server start
+
+
+
+команды docker:
+
+- удаление всех контейнеров
+docker-compose douw
+
+- удаление контейнера
+docker rm <544746864>
+sudo docker stop ba9376a90098
+
+- image
+docker image ls
+docker image -aq
+docker rmi <544746864>
+
+- volume
+docker volume ls
+docker volume prune
+
+
+
+
+
+
+
+
+
+
+-----------------
+log celery
+--->
+на сервере не переходит со стадии STARTED
+
+[2023-05-04 14:39:00,471: DEBUG/MainProcess] | Worker: Preparing bootsteps.
+[2023-05-04 14:39:00,477: DEBUG/MainProcess] | Worker: Building graph...
+[2023-05-04 14:39:00,477: DEBUG/MainProcess] | Worker: New boot order: {StateDB, Timer, Hub, Pool, Autoscaler, Beat, Consumer}
+[2023-05-04 14:39:00,492: DEBUG/MainProcess] | Consumer: Preparing bootsteps.
+[2023-05-04 14:39:00,493: DEBUG/MainProcess] | Consumer: Building graph...
+[2023-05-04 14:39:00,539: DEBUG/MainProcess] | Consumer: New boot order: {Connection, Agent, Events, Mingle, Gossip, Tasks, Control, Heart, event loop}
+[2023-05-04 14:39:00,591: DEBUG/MainProcess] | Worker: Starting Hub
+[2023-05-04 14:39:00,592: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:00,592: DEBUG/MainProcess] | Worker: Starting Pool
+[2023-05-04 14:39:00,749: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:00,750: DEBUG/MainProcess] | Worker: Starting Consumer
+[2023-05-04 14:39:00,750: DEBUG/MainProcess] | Consumer: Starting Connection
+[2023-05-04 14:39:00,804: INFO/MainProcess] Connected to redis://redis:6379/0
+[2023-05-04 14:39:00,804: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:00,804: DEBUG/MainProcess] | Consumer: Starting Events
+[2023-05-04 14:39:00,814: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:00,814: DEBUG/MainProcess] | Consumer: Starting Mingle
+[2023-05-04 14:39:00,821: INFO/MainProcess] mingle: searching for neighbors
+[2023-05-04 14:39:01,856: INFO/MainProcess] mingle: all alone
+[2023-05-04 14:39:01,857: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:01,857: DEBUG/MainProcess] | Consumer: Starting Gossip
+[2023-05-04 14:39:01,869: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:01,869: DEBUG/MainProcess] | Consumer: Starting Tasks
+[2023-05-04 14:39:01,884: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:01,885: DEBUG/MainProcess] | Consumer: Starting Control
+[2023-05-04 14:39:01,895: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:01,895: DEBUG/MainProcess] | Consumer: Starting Heart
+[2023-05-04 14:39:01,900: DEBUG/MainProcess] ^-- substep ok
+[2023-05-04 14:39:01,900: DEBUG/MainProcess] | Consumer: Starting event loop
+[2023-05-04 14:39:01,900: DEBUG/MainProcess] | Worker: Hub.register Pool...
+[2023-05-04 14:39:01,901: WARNING/MainProcess] /usr/local/lib/python3.9/site-packages/celery/fixups/django.py:203: UserWarning: Using settings.DEBUG leads to a memory
+            leak, never use this setting in production environments!
+  warnings.warn('''Using settings.DEBUG leads to a memory
+
+[2023-05-04 14:39:01,902: INFO/MainProcess] celery@252ccf00d9be ready.
+[2023-05-04 14:39:01,902: DEBUG/MainProcess] basic.qos: prefetch_count->4
+[2023-05-04 14:39:34,086: INFO/MainProcess] Task netology_pd_diplom.tasks.send_email[4b364441-4164-4587-8cad-b8d920e0fff0] received
+[2023-05-04 14:39:34,090: DEBUG/MainProcess] TaskPool: Apply <function fast_trace_task at 0x7f0ea78d73a0> (args:('netology_pd_diplom.tasks.send_email', '4b364441-4164-4587-8cad-b8d920e0fff0', {'lang': 'py', 'task': 'netology_pd_diplom.tasks.send_email', 'id': '4b364441-4164-4587-8cad-b8d920e0fff0', 'shadow': None, 'eta': None, 'expires': None, 'group': None, 'group_index': None, 'retries': 0, 'timelimit': [None, None], 'root_id': '4b364441-4164-4587-8cad-b8d920e0fff0', 'parent_id': None, 'argsrepr': "('6021185@mail.ru', 'Добавление нового контакта', 'Новый контакт добавлен')", 'kwargsrepr': '{}', 'origin': 'gen14@27d684e3d0ae', 'ignore_result': False, 'properties': {'correlation_id': '4b364441-4164-4587-8cad-b8d920e0fff0', 'reply_to': 'a9322f97-233d-391a-96c1-ca8c65af195a', 'delivery_mode': 2, 'delivery_info': {'exchange': '', 'routing_key': 'celery'}, 'priority': 0, 'body_encoding': 'base64', 'delivery_tag': '7b3873c8-f314-44e6-86a6-82418aadab1e'}, 'reply_to': 'a9322f97-233d-391a-96c1-ca8c65af195a', 'correlation_id': '4b364441-4164-4587-8cad-b8d920e0fff0', 'hostname': 'celery@252ccf00d9be', 'delivery_info':... kwargs:{})
+
+
+
+[2023-05-05 08:21:11,043: INFO/MainProcess] Task netology_pd_diplom.tasks.send_email[56f6dcc0-30e3-4db3-a7bc-3a77b925658a] received
+[2023-05-05 08:21:11,044: DEBUG/MainProcess] TaskPool: Apply <function fast_trace_task at 0x7f475c1163a0>
+(args:(
+'netology_pd_diplom.tasks.send_email',
+'56f6dcc0-30e3-4db3-a7bc-3a77b925658a',
+{'lang': 'py',
+'task': 'netology_pd_diplom.tasks.send_email',
+'id': '56f6dcc0-30e3-4db3-a7bc-3a77b925658a',
+'shadow': None,
+'eta': None,
+'expires': None,
+'group': None,
+'group_index': None,
+'retries': 0,
+'timelimit': [None, None],
+'root_id': '56f6dcc0-30e3-4db3-a7bc-3a77b925658a',
+'parent_id': None,
+'argsrepr': "('6021185@mail.ru', 'Добавление нового контакта', 'Новый контакт добавлен')",
+'kwargsrepr': '{}',
+'origin': 'gen14@3f698252924d',
+'ignore_result': False,
+'properties': {
+'correlation_id': '56f6dcc0-30e3-4db3-a7bc-3a77b925658a',
+'reply_to': '60885cf2-248c-373e-ae7a-b18e936669a5',
+'delivery_mode': 2,
+'delivery_info': {'exchange': '', 'routing_key': 'celery'},
+'priority': 0,
+'body_encoding': 'base64',
+'delivery_tag': 'f11593bb-a755-4b4c-995a-96e906a7d6e2'},
+'reply_to': '60885cf2-248c-373e-ae7a-b18e936669a5',
+'correlation_id': '56f6dcc0-30e3-4db3-a7bc-3a77b925658a',
+'hostname': 'celery@f3a76e2abfd3',
+'delivery_info':... kwargs:{})
+
+-----------------------------------------------------------------------
+на компьютере в докках все работает:
+
+[2023-05-06 08:03:02,255: INFO/MainProcess] celery@6c424ac311f6 ready.
+[2023-05-06 08:03:02,255: DEBUG/MainProcess] basic.qos: prefetch_count->8
+[2023-05-06 08:04:55,017: INFO/MainProcess] Task netology_pd_diplom.tasks.send_email[54023a78-7d76-49e6-8879-6c9453f51e96] received
+[2023-05-06 08:04:55,017: DEBUG/MainProcess] TaskPool: Apply <function fast_trace_task at 0x7fd487e25c10> (args:('netology_pd_diplom.tasks.send_email', '54023a78-7d76-49e6-8879-6c9453f51e96', {'lang': 'py', 'task': 'netology_pd_diplom.tasks.send_email', 'id': '54023a78-7d76-49e6-8879-6c9453f51e96', 'shadow': None, 'eta': None, 'expires': None, 'group': None, 'group_index': None, 'retries': 0, 'timelimit': [None, None], 'root_id': '54023a78-7d76-49e6-8879-6c9453f51e96', 'parent_id': None, 'argsrepr': "('6021185@mail.ru', 'Password Reset Token for 6021185@mail.ru', '3d1fa762bec0aa98ef4088323b69fb1d41ecfbebaf')", 'kwargsrepr': '{}', 'origin': 'gen14@e9980853fb12', 'ignore_result': False, 'properties': {'correlation_id': '54023a78-7d76-49e6-8879-6c9453f51e96', 'reply_to': '031660e6-0e2e-3952-8b31-bdc3e11ae024', 'delivery_mode': 2, 'delivery_info': {'exchange': '', 'routing_key': 'celery'}, 'priority': 0, 'body_encoding': 'base64', 'delivery_tag': '9d209bd1-61a8-4679-be8f-d45025c3752f'}, 'reply_to': '031660e6-0e2e-3952-8b31-bdc3e11ae024', 'correlation_id': '54023a78-7d76-49e6-8879-6c9453f51e96', 'hostname':... kwargs:{})
+[2023-05-06 08:04:55,755: INFO/ForkPoolWorker-1] Task netology_pd_diplom.tasks.send_email[54023a78-7d76-49e6-8879-6c9453f51e96] succeeded in 0.7350131959992723s: None
+[2023-05-06 08:05:44,615: INFO/MainProcess] Task netology_pd_diplom.tasks.send_email[d7045aba-2258-4059-b8f1-f9fbb8b53d50] received
+[2023-05-06 08:05:44,615: DEBUG/MainProcess] TaskPool: Apply <function fast_trace_task at 0x7fd487e25c10> (args:('netology_pd_diplom.tasks.send_email', 'd7045aba-2258-4059-b8f1-f9fbb8b53d50', {'lang': 'py', 'task': 'netology_pd_diplom.tasks.send_email', 'id': 'd7045aba-2258-4059-b8f1-f9fbb8b53d50', 'shadow': None, 'eta': None, 'expires': None, 'group': None, 'group_index': None, 'retries': 0, 'timelimit': [None, None], 'root_id': 'd7045aba-2258-4059-b8f1-f9fbb8b53d50', 'parent_id': None, 'argsrepr': "('6021185@mail.ru', 'Добавление нового контакта', 'Новый контакт добавлен')", 'kwargsrepr': '{}', 'origin': 'gen14@e9980853fb12', 'ignore_result': False, 'properties': {'correlation_id': 'd7045aba-2258-4059-b8f1-f9fbb8b53d50', 'reply_to': '031660e6-0e2e-3952-8b31-bdc3e11ae024', 'delivery_mode': 2, 'delivery_info': {'exchange': '', 'routing_key': 'celery'}, 'priority': 0, 'body_encoding': 'base64', 'delivery_tag': '4cd306f4-a734-42c9-ad13-237e643d97eb'}, 'reply_to': '031660e6-0e2e-3952-8b31-bdc3e11ae024', 'correlation_id': 'd7045aba-2258-4059-b8f1-f9fbb8b53d50', 'hostname': 'celery@6c424ac311f6', 'delivery_info':... kwargs:{})
+[2023-05-06 08:05:45,607: INFO/ForkPoolWorker-1] Task netology_pd_diplom.tasks.send_email[d7045aba-2258-4059-b8f1-f9fbb8b53d50] succeeded in 0.9895009909996588s: None
+
+
+
+---------------------------------------------------------------------------------------------------

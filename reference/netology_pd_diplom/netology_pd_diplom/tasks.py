@@ -3,9 +3,9 @@ from django.core.mail import EmailMultiAlternatives
 
 from netology_pd_diplom.celery import app
 
-# формирование и отправка писем перенесены из signals.py в tasks.py для применения в celery
 
-@app.task()
+# формирование и отправка писем перенесены из signals.py в tasks.py для применения в celery
+@app.task
 def send_email(email, title, massage):
 
     msg = EmailMultiAlternatives(
@@ -19,3 +19,12 @@ def send_email(email, title, massage):
         [email]
     )
     msg.send()
+
+
+# тестовая таска
+@app.task
+def task_print(pr, t):
+    import time
+    time.sleep(t)
+    print(pr)
+    return pr

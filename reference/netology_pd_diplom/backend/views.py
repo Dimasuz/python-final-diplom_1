@@ -25,7 +25,7 @@ from backend.models import Shop, Category, Product, ProductInfo, Parameter, Prod
 from backend.serializers import UserSerializer, CategorySerializer, ShopSerializer, ProductInfoSerializer, \
     OrderItemSerializer, OrderSerializer, ContactSerializer, ParameterSerializer
 from backend.signals import new_user_registered, new_order, new_contact
-
+from netology_pd_diplom.tasks import task_print
 
 # для документациии OPEN API добавлены декораторы @extend_schema
 
@@ -328,7 +328,6 @@ class BasketView(APIView):
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
 
         items_sting = request.data.get('items')
-        print(items_sting)
         if items_sting:
             try:
                 items_dict = load_json(items_sting)
@@ -531,9 +530,11 @@ class ContactView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 #< добавлена отправка email при создании нового контакта
+                task_print_id_1 = task_print.delay('start celery', 2)
                 send_mail = new_contact.send(sender=self.__class__, user_id=request.user.id)
+                task_print_id_2 = task_print.delay(send_mail[0][1], 9)
                 #>
-                return JsonResponse({'Status': True, 'task_id': send_mail[0][1]})
+                return JsonResponse({'Status': True, 'task_id': send_mail[0][1], 'task_print_id_1': str(task_print_id_1), 'task_print_id_2': str(task_print_id_2), })
             else:
                 return JsonResponse({'Status': False, 'Errors': serializer.errors})
 

@@ -2,7 +2,8 @@ import time
 import requests
 from pprint import pprint
 
-url = '0.0.0.0:1337'
+# url = '0.0.0.0:1337'
+url = '0.0.0.0:8000'
 
 url_base = 'http://' + url + '/api/v1/'
 
@@ -89,8 +90,26 @@ def api_test():
             'phone': f'phone_test'
             }
     task = base_request(url_view=url_view, method='post', headers=headers, data=data)
-    task_id = task['task_id']
-    if task_id:
+    if task:
+        url_view = 'status/'
+
+        task_id = task['task_print_id_1']
+        params = {'task_id': task_id}
+        status = "PENDING"
+        while status == "PENDING" or status == "STARTED":
+            status_task = base_request(url_view=url_view, method='get', headers=headers, params=params)
+            status = status_task['status']
+            time.sleep(1)
+
+        task_id = task['task_id']
+        params = {'task_id': task_id}
+        status = "PENDING"
+        while status == "PENDING" or status == "STARTED":
+            status_task = base_request(url_view=url_view, method='get', headers=headers, params=params)
+            status = status_task['status']
+            time.sleep(1)
+
+        task_id = task['task_print_id_2']
         url_view = 'status/'
         params = {'task_id': task_id}
         status = "PENDING"

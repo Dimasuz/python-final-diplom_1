@@ -1,10 +1,10 @@
 #!/bin/sh
 
-python manage.py collectstatic --noinput --clear
+python3 manage.py collectstatic --noinput --clear
 
-python manage.py makemigrations backend
+python3 manage.py makemigrations backend
 
-until python manage.py migrate
+until python3 manage.py migrate
 do
     echo "Waiting for db to be ready..."
     sleep 2

@@ -3,7 +3,7 @@ import requests
 from pprint import pprint
 
 # url = '0.0.0.0:1337'
-url = '0.0.0.0:8000'
+url = '134.0.117.85:1337'
 
 url_base = 'http://' + url + '/api/v1/'
 
@@ -43,7 +43,7 @@ def api_test():
           'contacts': f'contacts_{num}',
           'password': password,
           }
-    base_request(url_view=url_view, method='post', data=data)
+    # base_request(url_view=url_view, method='post', data=data)
 
     url_view = 'user/register/confirm/'
     print('POST', url_view)
@@ -51,7 +51,7 @@ def api_test():
     data= {'email': email,
            'token': token,
            }
-    base_request(url_view=url_view, method='post', data=data)
+    # base_request(url_view=url_view, method='post', data=data)
 
     url_view = 'user/login/'
     print('POST', url_view)

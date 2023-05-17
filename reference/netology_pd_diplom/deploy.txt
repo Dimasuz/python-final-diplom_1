@@ -1,5 +1,6 @@
 - проверка соединения
-ping 194.67.111.29
+ping 134.0.117.85
+
 
 Создание ключа:
 - создать
@@ -8,7 +9,8 @@ sudo ssh-keygen
 sudo cat ~/.ssh/id_rsa.pub
 
 - подключаемся к серверу
-ssh root@194.67.111.29
+ssh root@134.0.117.85
+5_9xbvKGWdYnmwU
 
 - создаем нового пользователя
 adduser diplom
@@ -18,6 +20,8 @@ usermod diplom -aG sudo
 su diplom
 - переходим в домашнюю директорию
 cd ~
+
+ssh diplom@134.0.117.85
 
 sudo apt update
 sudo apt install python3-pip

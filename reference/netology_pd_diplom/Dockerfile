@@ -12,7 +12,7 @@ RUN python3 -m pip install --upgrade pip
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY requirements.txt /usr/src/app
+COPY requirements.txt /usr/src/app/requirements.txt
 WORKDIR /usr/src/app
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 

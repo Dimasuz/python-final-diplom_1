@@ -3,7 +3,7 @@ import requests
 from pprint import pprint
 
 # url = '0.0.0.0:1337'
-url = '134.0.117.85:1337'
+url = '80.78.255.96:1337'
 
 url_base = 'http://' + url + '/api/v1/'
 
@@ -61,26 +61,26 @@ def api_test():
     response = base_request(url_view=url_view, method='post', data=data)
     token = response['Token']
 
-    url_view = 'user/details/'
-    authorization = f"Token {token}"
-    headers = {'Authorization': authorization,}
-    data = {'first_name': f'first_name_{num+num}', }
-    base_request(url_view=url_view, method='post', headers=headers, data=data)
-    base_request(url_view=url_view, method='get', headers=headers)
-
-    url_view = 'partner/update/'
-    data = {'url': "https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml"}
-    content_type = 'application/x-www-form-urlencoded'
-    headers = {'Content-Type': content_type, 'Authorization': authorization,}
-    base_request(url_view=url_view, method='post', headers=headers, data=data)
-
-    url_view = 'partner/orders/'
-    base_request(url_view=url_view, headers=headers)
-    data = {'id': 1, 'state': 'New goods',}
-    base_request(url_view=url_view, method='post', headers=headers, data=data)
-
-    url_view = 'shops/'
-    base_request(url_view=url_view)
+#     url_view = 'user/details/'
+#     authorization = f"Token {token}"
+#     headers = {'Authorization': authorization,}
+#     data = {'first_name': f'first_name_{num+num}', }
+#     base_request(url_view=url_view, method='post', headers=headers, data=data)
+#     base_request(url_view=url_view, method='get', headers=headers)
+#
+#     url_view = 'partner/update/'
+#     data = {'url': "https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml"}
+#     content_type = 'application/x-www-form-urlencoded'
+#     headers = {'Content-Type': content_type, 'Authorization': authorization,}
+#     base_request(url_view=url_view, method='post', headers=headers, data=data)
+#
+#     url_view = 'partner/orders/'
+#     base_request(url_view=url_view, headers=headers)
+#     data = {'id': 1, 'state': 'New goods',}
+#     base_request(url_view=url_view, method='post', headers=headers, data=data)
+#
+#     url_view = 'shops/'
+#     base_request(url_view=url_view)
 
     url_view = 'user/contact/'
     authorization = f"Token {token}"
@@ -97,6 +97,7 @@ def api_test():
         params = {'task_id': task_id}
         status = "PENDING"
         while status == "PENDING" or status == "STARTED":
+            print(f'{task_id=}')
             status_task = base_request(url_view=url_view, method='get', headers=headers, params=params)
             status = status_task['status']
             time.sleep(1)
@@ -105,6 +106,7 @@ def api_test():
         params = {'task_id': task_id}
         status = "PENDING"
         while status == "PENDING" or status == "STARTED":
+            print(f'{task_id=}')
             status_task = base_request(url_view=url_view, method='get', headers=headers, params=params)
             status = status_task['status']
             time.sleep(1)
@@ -114,48 +116,49 @@ def api_test():
         params = {'task_id': task_id}
         status = "PENDING"
         while status == "PENDING" or status == "STARTED":
+            print(f'{task_id=}')
             status_task = base_request(url_view=url_view, method='get', headers=headers, params=params)
             status = status_task['status']
             time.sleep(1)
 
-    url_view = 'categories/'
-    base_request(url_view=url_view)
-
-    url_view = 'products/'
-    params = {'shop_id': None,
-              'category_id': None,
-              'product_id': 1,
-              }
-    base_request(url_view=url_view, params=params)
-
-    url_view = 'basket/'
-    data = {"items": '[{"quantity": 1, "product_info": 5}, {"quantity": 1, "product_info": 4}]'}
-    headers = {'Content-Type': content_type, 'Authorization': authorization, }
-    base_request(url_view=url_view, method='post', headers=headers, data=data)
-    base_request(url_view=url_view, headers=headers)
-    data = {"items": '[{"id": 4, "quantity": 2}, {"id": 5, "quantity": 2}]'}
-    base_request(url_view=url_view, method='put', headers=headers, data=data)
-    base_request(url_view=url_view, headers=headers)
-    data = {"items": "4,5"}
-    base_request(url_view=url_view, method='delete', headers=headers, data=data)
-
-    url_view = 'order/'
-    params = {'order': 1}
-    base_request(url_view=url_view, params=params)
-    data = {'id': 1,
-            'contact': 1,
-            }
-    base_request(url_view=url_view, method='post', headers=headers, data=data)
-
-    url_view = 'parameter/'
-    base_request(url_view=url_view, headers=headers)
-    data = {'name': 'цвет', }
-    base_request(url_view=url_view, method='post', headers=headers, data=data)
-    data = {'id': 1, 'name': 'New parameter', }
-    base_request(url_view=url_view, method='put', headers=headers, data=data)
-    data = {'id': 1, }
-    base_request(url_view=url_view, method='delete', headers=headers, data=data)
-    base_request(url_view=url_view, headers=headers)
+#     url_view = 'categories/'
+#     base_request(url_view=url_view)
+#
+#     url_view = 'products/'
+#     params = {'shop_id': None,
+#               'category_id': None,
+#               'product_id': 1,
+#               }
+#     base_request(url_view=url_view, params=params)
+#
+#     url_view = 'basket/'
+#     data = {"items": '[{"quantity": 1, "product_info": 5}, {"quantity": 1, "product_info": 4}]'}
+#     headers = {'Content-Type': content_type, 'Authorization': authorization, }
+#     base_request(url_view=url_view, method='post', headers=headers, data=data)
+#     base_request(url_view=url_view, headers=headers)
+#     data = {"items": '[{"id": 4, "quantity": 2}, {"id": 5, "quantity": 2}]'}
+#     base_request(url_view=url_view, method='put', headers=headers, data=data)
+#     base_request(url_view=url_view, headers=headers)
+#     data = {"items": "4,5"}
+#     base_request(url_view=url_view, method='delete', headers=headers, data=data)
+#
+#     url_view = 'order/'
+#     params = {'order': 1}
+#     base_request(url_view=url_view, params=params)
+#     data = {'id': 1,
+#             'contact': 1,
+#             }
+#     base_request(url_view=url_view, method='post', headers=headers, data=data)
+#
+#     url_view = 'parameter/'
+#     base_request(url_view=url_view, headers=headers)
+#     data = {'name': 'цвет', }
+#     base_request(url_view=url_view, method='post', headers=headers, data=data)
+#     data = {'id': 1, 'name': 'New parameter', }
+#     base_request(url_view=url_view, method='put', headers=headers, data=data)
+#     data = {'id': 1, }
+#     base_request(url_view=url_view, method='delete', headers=headers, data=data)
+#     base_request(url_view=url_view, headers=headers)
 
 if __name__ == "__main__":
     api_test()
